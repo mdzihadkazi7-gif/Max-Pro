@@ -2,135 +2,223 @@ const fs = require("fs-extra");
 const path = require("path");
 const axios = require("axios");
 const Canvas = require("canvas");
-
+Canvas.registerFont(path.join(__dirname, "cache", "kalpurush.ttf"), {
+  family: "Kalpurush"
+});
 module.exports.config = {
   name: "joinnoti",
-  version: "1.0.3",
-  credits: "Maria (rX Modded) + Updated by rX Abdullah",
-  description: "Welcome new member with profile pic and random background",
+  version: "4.3.0",
+  credits: "rX Abdullah", //don't change this credite for more update (github.com/rxabdullah007) 
   eventType: ["log:subscribe"],
-  dependencies: {
-    "canvas": "",
-    "axios": "",
-    "fs-extra": ""
-  }
+  description: "Welcome image with profile borders, inviter shifted, and random background"
 };
 
-module.exports.run = async function({ api, event, Users }) {
+module.exports.run = async function ({ api, event, Users }) {
+
   const { threadID, logMessageData } = event;
   const added = logMessageData.addedParticipants?.[0];
   if (!added) return;
 
   const userID = added.userFbId;
+  const botID = api.getCurrentUserID();
+
+  // =============== CASE 1: BOT ADDED ===============
+  if (userID == botID) {
+
+    api.sendMessage(
+      "𝐓𝐡𝐚𝐧𝐤𝐬 𝐟𝐨𝐫 𝐚𝐝𝐝𝐢𝐧𝐠 𝐦𝐞 ❤️\n𝐓𝐲𝐩𝐞 !𝐡𝐞𝐥𝐩 𝐭𝐨 𝐬𝐞𝐞 𝐦𝐲 𝐜𝐨𝐦𝐦𝐚𝐧𝐝𝐬!",
+      threadID
+    );
+
+    await api.changeNickname("Sııƞƞeɽ мΛяเα 倫ッ", threadID, botID);
+
+    return;
+  }
+
+  // =============== CASE 2: NORMAL USER ADDED ===============
+
   const userName = added.fullName;
 
-  const threadInfo = await api.getThreadInfo(threadID);
-  const groupName = threadInfo.threadName;
-  const memberCount = threadInfo.participantIDs.length;
+  const info = await api.getThreadInfo(threadID);
+  const groupName = info.threadName;
+  const adminCount = info.adminIDs.length;
+  const memberCount = info.participantIDs.length;
 
-  const adderID = event.author;
-  const adderName = (await Users.getNameUser(adderID)) || "Unknown";
+  const male = info.userInfo.filter(u => u.gender === "MALE").length;
+  const female = info.userInfo.filter(u => u.gender === "FEMALE").length;
 
-  const now = new Date();
-const dateString = now.toLocaleDateString("en-GB", { timeZone: "Asia/Dhaka" }); // DD/MM/YYYY
-const timeString = now.toLocaleTimeString("en-US", { hour12: true, timeZone: "Asia/Dhaka" }); // HH:MM AM/PM
-
-
-  // Random background selection
-  const bgURLs = [
-    "https://i.postimg.cc/904gjPHn/images-11.jpg",
-    "https://i.postimg.cc/8k3nmYhQ/images-10.jpg",
-    "https://i.postimg.cc/KjdqcKZv/images-9.jpg",
-    "https://i.postimg.cc/28Z9cxwq/images-8.jpg"
-  ];
-  const bgURL = bgURLs[Math.floor(Math.random() * bgURLs.length)];
+  const inviterID = event.author;
+  const inviterName = await Users.getNameUser(inviterID);
 
   const avatarURL = `https://graph.facebook.com/${userID}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
+  const inviterAvatarURL = `https://graph.facebook.com/${inviterID}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
+  const groupPhotoURL = info.imageSrc;
 
-  const cacheDir = path.join(__dirname, "cache");
-  fs.ensureDirSync(cacheDir);
+  const backgrounds = [
+    "https://i.postimg.cc/KvKRcxmh/0e915f11edad950d8356a26a96f1d9d9.jpg",
+    "https://i.postimg.cc/3whRZGpC/169243.jpg",
+    "https://i.postimg.cc/4yyn9Ttv/2Ayk-GB.jpg",
+    "https://i.postimg.cc/PrBNP95c/360-F-665314071-v-Zb-Ef-Kb-Imd0l-Tgt-B9tb-Dyeoh74FCb-WJz.jpg",
+    "https://i.postimg.cc/4y0yvFbq/43afd01dc42127c352f1fde070cc2be0.jpg",
+    "https://i.postimg.cc/YqJjhZCT/48fd6b0f4be38d891f1d1e779a63c8d3.jpg",
+    "https://i.postimg.cc/MKcvZqq3/anime-aesthetic-pictures-lqtumoq8zq18qvfs.jpg",
+    "https://i.postimg.cc/pXgyp4dy/cropped-anime-girls-bunny-ears-mx-shimmer-wallpaper-preview.jpg",
+    "https://i.postimg.cc/c4V6r2JS/dark-sunset-wallpaper-1366x768-81373-46.jpg",
+    "https://i.postimg.cc/9F4rXCCL/demon-slayer-zenitsu-agatsuma-around-blue-lightning-with-black-backgorund-hd-anime-HD.jpg",
+    "https://i.postimg.cc/zXLVD88Q/desktop-wallpaper-chill-anime-on-dog-dog-spring-lofi.jpg",
+    "https://i.postimg.cc/zvQvwPSS/efbca9cd58be501870f823c6bf18b3ba.jpg",
+    "https://i.postimg.cc/BQ8XZ4J9/f6c517ccc8bab364676add8b07c0736d.jpg",
+    "https://i.postimg.cc/HsJVWdd5/HD-wallpaper-anime-original-girl-lantern-night-umbrella.jpg",
+    "https://i.postimg.cc/jSP2NcW6/Kurumi.jpg",
+    "https://i.postimg.cc/Fs2178KR/RPMc-Bv-KKHCckgo-Ry-Uh-He-Z.jpg",
+    "https://i.postimg.cc/MpVHR5c9/sunset-minimalist-wallpaper-1600x900-81072-47.jpg",
+    "https://i.postimg.cc/RV3NC44s/Uj-Jo-Pk.jpg",
+    "https://i.postimg.cc/sg7xSmBv/wp5894854.jpg",
+    "https://i.postimg.cc/90k0PNtN/wp6231959.jpg"
+  ];
 
-  const bgPath = path.join(cacheDir, `bg_${userID}.jpg`);
-  const avatarPath = path.join(cacheDir, `avt_${userID}.png`);
-  const outPath = path.join(cacheDir, `welcome_${userID}.png`);
+  const backgroundURL = backgrounds[Math.floor(Math.random() * backgrounds.length)];
+
+  const cache = path.join(__dirname, "cache");
+  fs.ensureDirSync(cache);
+
+  const avt = path.join(cache, `avt_${userID}.png`);
+  const inv = path.join(cache, `inv_${inviterID}.png`);
+  const grp = path.join(cache, `grp_${threadID}.png`);
+  const bgFile = path.join(cache, `bg.png`);
+  const out = path.join(cache, `welcome_${userID}.png`);
 
   try {
-    // Download random background
-    const bgImg = (await axios.get(bgURL, { responseType: "arraybuffer" })).data;
-    fs.writeFileSync(bgPath, Buffer.from(bgImg));
 
-    // Download avatar
-    const avatarImg = (await axios.get(avatarURL, { responseType: "arraybuffer" })).data;
-    fs.writeFileSync(avatarPath, Buffer.from(avatarImg));
+    fs.writeFileSync(avt, (await axios.get(avatarURL, { responseType: "arraybuffer" })).data);
+    fs.writeFileSync(inv, (await axios.get(inviterAvatarURL, { responseType: "arraybuffer" })).data);
+    if (groupPhotoURL)
+      fs.writeFileSync(grp, (await axios.get(groupPhotoURL, { responseType: "arraybuffer" })).data);
+    fs.writeFileSync(bgFile, (await axios.get(backgroundURL, { responseType: "arraybuffer" })).data);
 
-    // Create canvas
-    const canvas = Canvas.createCanvas(800, 500);
+    const canvas = Canvas.createCanvas(1280, 720);
     const ctx = canvas.getContext("2d");
 
-    const background = await Canvas.loadImage(bgPath);
-    ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+    const bg = await Canvas.loadImage(bgFile);
+    ctx.drawImage(bg, 0, 0, 1280, 720);
 
-    const avatarSize = 180;
-    const avatarX = (canvas.width - avatarSize) / 2;
-    const avatarY = 100;
+    ctx.fillStyle = "rgba(0,0,0,0.55)";
+    ctx.fillRect(0, 0, 1280, 130);
 
-    // White circular frame
-    ctx.beginPath();
-    ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2 + 8, 0, Math.PI * 2, false);
-    ctx.fillStyle = "#ffffff";
-    ctx.fill();
+    if (groupPhotoURL) {
+      const g = await Canvas.loadImage(grp);
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(80, 65, 50, 0, Math.PI * 2);
+      ctx.strokeStyle = "#00f";
+      ctx.lineWidth = 5;
+      ctx.stroke();
+      ctx.clip();
+      ctx.drawImage(g, 30, 15, 100, 100);
+      ctx.restore();
+    }
 
-    // Load avatar
-    const avatar = await Canvas.loadImage(avatarPath);
+    ctx.fillStyle = "#fff";
+    ctx.font = "bold 35px Kalpurush";
+    ctx.fillText(groupName, 180, 60);
+
+    ctx.font = "26px Kalpurush";
+    ctx.fillText(`${memberCount} members`, 180, 100);
+    ctx.fillText(`${adminCount} admins`, 360, 100);
+
+    ctx.font = "bold 28px Kalpurush";
+    ctx.fillStyle = "#fff";
+    ctx.fillText("Invited by:", 950, 50);
+
+    ctx.font = "bold 30px Kalpurush";
+    ctx.fillStyle = "#ff69b4";
+    ctx.fillText(inviterName, 950, 90);
+
+    const inviterPic = await Canvas.loadImage(inv);
     ctx.save();
     ctx.beginPath();
-    ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2, true);
-    ctx.closePath();
+    ctx.arc(1190, 65, 45, 0, Math.PI * 2);
+    ctx.strokeStyle = "#ff69b4";
+    ctx.lineWidth = 5;
+    ctx.stroke();
     ctx.clip();
-    ctx.drawImage(avatar, avatarX, avatarY, avatarSize, avatarSize);
+    ctx.drawImage(inviterPic, 1150, 25, 80, 80);
     ctx.restore();
 
-    // Draw text lines
+    // NEON WELCOME TEXT
+    ctx.textAlign = "center";
+    ctx.font = "bold 80px Kalpurush";
+
+    ctx.fillStyle = "#39FF14";
+    ctx.shadowColor = "#39FF14";
+    ctx.shadowBlur = 45;
+    ctx.fillText("WELCOME", 640, 200);
+
+    ctx.shadowColor = "white";
+    ctx.shadowBlur = 15;
+    ctx.fillStyle = "#d9ffd9";
+    ctx.fillText("WELCOME", 640, 200);
+
+    // Reset Shadow
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = "transparent";
+
+    // MAIN AVATAR
+    const av = await Canvas.loadImage(avt);
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(640, 360, 115, 0, Math.PI * 2);
+    ctx.strokeStyle = "#00ff00";
+    ctx.lineWidth = 5;
+    ctx.stroke();
+    ctx.clip();
+    ctx.drawImage(av, 530, 250, 220, 220);
+    ctx.restore();
+
+    // NEON USERNAME
+    ctx.textAlign = "center";
+    ctx.font = "bold 56px Kalpurush";
+    ctx.fillStyle = "#39FF14";
+    ctx.shadowColor = "#39FF14";
+    ctx.shadowBlur = 35;
+    ctx.fillText(userName, 640, 520);
+
+    ctx.shadowColor = "white";
+    ctx.shadowBlur = 12;
+    ctx.fillStyle = "#CCFFCC";
+    ctx.fillText(userName, 640, 520);
+
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = "rgba(0,0,0,0.55)";
+    ctx.fillRect(0, 650, 1280, 70);
+
+    ctx.font = "28px Kalpurush";
+    ctx.fillStyle = "#fff";
     ctx.textAlign = "center";
 
-    ctx.font = "bold 36px Arial";
-    ctx.fillStyle = "#FFB6C1";
-    ctx.fillText(userName, canvas.width / 2, avatarY + avatarSize + 50);
+    ctx.fillText(`✰ ${memberCount} Members     ♂️ ${male} Male     ♀️ ${female} Female     ★ Thanks for using: Maria v3`, 640, 695);
 
-    ctx.font = "bold 30px Arial";
-    ctx.fillStyle = "#00FFFF";
-    ctx.fillText(groupName, canvas.width / 2, avatarY + avatarSize + 90);
+    fs.writeFileSync(out, canvas.toBuffer());
 
-    ctx.font = "bold 28px Arial";
-    ctx.fillStyle = "#FFFF00";
-    ctx.fillText(`You are the ${memberCount}th member of this group`, canvas.width / 2, avatarY + avatarSize + 130);
+    api.sendMessage(
+      {
+        body: `🌸 Welcome @${userName} to ${groupName}!`,
+        attachment: fs.createReadStream(out),
+        mentions: [{ tag: `@${userName}`, id: userID }]
+      },
+      threadID,
+      () => {
+        if (fs.existsSync(avt)) fs.unlinkSync(avt);
+        if (fs.existsSync(inv)) fs.unlinkSync(inv);
+        if (groupPhotoURL && fs.existsSync(grp)) fs.unlinkSync(grp);
+        if (fs.existsSync(bgFile)) fs.unlinkSync(bgFile);
+        if (fs.existsSync(out)) fs.unlinkSync(out);
+      }
+    );
 
-    // Save final image
-    const finalBuffer = canvas.toBuffer();
-    fs.writeFileSync(outPath, finalBuffer);
-
-    const message = {
-  body: `‎🌸 ʜᴇʟʟᴏ @${userName}
-🎀 ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ ᴏᴜʀ ɢʀᴏᴜᴘ — ${groupName}
-📌 ʏᴏᴜ'ʀᴇ ᴛʜᴇ ${memberCount} ᴍᴇᴍʙᴇʀ ᴏɴ ᴛʜɪꜱ ɢʀᴏᴜᴘ!
-💬 ғᴇᴇʟ ғʀᴇᴇ ᴛᴏ ᴄʜᴀᴛ, ᴄᴏɴɴᴇᴄᴛ ᴀɴᴅ ʜᴀᴠᴇ ꜰᴜɴ ʜᴇʀᴇ!
-ᰔ Sııƞƞeɽ мΛяเα 倫ッ
-━━━━━━━━━━━━━━━━
-📅 ${new Date().toLocaleTimeString("en-US", { hour12: true, timeZone: "Asia/Dhaka" })} - ${new Date().toLocaleDateString("en-GB")} - ${new Date().toLocaleDateString("en-US", { weekday: "long" })}`,
-  mentions: [
-    { tag: `@${userName}`, id: userID }
-  ],
-  attachment: fs.createReadStream(outPath)
-};
-
-    api.sendMessage(message, threadID, () => {
-      fs.unlinkSync(bgPath);
-      fs.unlinkSync(avatarPath);
-      fs.unlinkSync(outPath);
-    });
-
-  } catch (error) {
-    console.error("Joinnoti error:", error);
-    api.sendMessage("𝐖𝐄𝐋𝐂𝐎𝐌𝐄 𝐓𝐲𝐩𝐞 !𝐡𝐞𝐥𝐩 𝐟𝐨𝐫 𝐚𝐥𝐥 𝐜𝐨𝐦𝐦𝐚𝐧𝐝𝐬 ⚙️", threadID);
+  } catch (e) {
+    console.log(e);
+    api.sendMessage("❌ Error while generating welcome image!", threadID);
   }
 };
