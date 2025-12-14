@@ -4,14 +4,14 @@ const path = require("path");
 
 module.exports.config = {
   name: "prefix",
-  version: "1.0.0",
+  version: "1.3.0",
   hasPermssion: 0,
-  credits: "Rx Modified",
+  credits: "rX",
   description: "Show bot prefix info without using any prefix",
   commandCategory: "system",
   usages: "",
   cooldowns: 5,
-  usePrefix: false // ⭐⭐ Main part: no prefix needed
+  usePrefix: false
 };
 
 module.exports.handleEvent = async function ({ api, event }) {
@@ -22,26 +22,65 @@ module.exports.handleEvent = async function ({ api, event }) {
     const ping = Date.now() - event.timestamp;
     const day = moment.tz("Asia/Dhaka").format("dddd");
 
-    // Get prefixes or set defaults
     const BOTPREFIX = global.config.PREFIX || "!";
     const GROUPPREFIX = global.data.threadData?.[threadID]?.prefix || BOTPREFIX;
-
     const BOTNAME = global.config.BOTNAME || "ʀx ᴄʜᴀᴛ ʙᴏᴛ";
 
-    const msg =
-`◇───✦ 𝗣𝗥𝗘𝗙𝗜𝗫 𝗦𝗧𝗔𝗧𝗨𝗦 ✦───◇
-• 𝗣𝗶𝗻𝗴: ${ping}ms
-• 𝗗𝗮𝘆: ${day}
-• 𝗕𝗼𝘁 𝗡𝗮𝗺𝗲: ${BOTNAME}
-• 𝗕𝗼𝘁 𝗣𝗿𝗲𝗳𝗶𝘅: ${BOTPREFIX}
-• 𝗚𝗿𝗼𝘂𝗽 𝗣𝗿𝗲𝗳𝗶𝘅: ${GROUPPREFIX}
-◇────────────────◇`;
+    const frames = [
+      `
+🌟╔═༶• 𝗣𝗥𝗘𝗙𝗜𝗫 𝗜𝗡𝗙𝗢 •༶═╗🌟
+🕒 Ping: ${ping}ms
+📅 Day: ${day}
+🤖 Bot Name: ${BOTNAME}
+💠 Bot Prefix: ${BOTPREFIX}
+💬 Group Prefix: ${GROUPPREFIX}
+🌟╚═༶• 𝗘𝗻𝗱 𝗢𝗳 𝗦𝘁𝗮𝘁𝘂𝘀 •༶═╝🌟
+`,
+      `
+╭━━•✧𝗣𝗥𝗘𝗙𝗜𝗫 𝗦𝗧𝗔𝗧𝗨𝗦✧•━━╮
+│ ⏱ Ping: ${ping}ms
+│ 📆 Day: ${day}
+│ 🤖 Bot: ${BOTNAME}
+│ 🔹 Bot Prefix: ${BOTPREFIX}
+│ 🔹 Group Prefix: ${GROUPPREFIX}
+╰━━━━━━━━━━━━━━━╯
+`,
+      `
+┏━༺ 𝗣𝗥𝗘𝗙𝗜𝗫 𝗜𝗡𝗙𝗢 ༻━┓
+┃ 🕒 Ping: ${ping}ms
+┃ 📅 Day: ${day}
+┃ 🤖 Bot Name: ${BOTNAME}
+┃ 💠 Bot Prefix: ${BOTPREFIX}
+┃ 💬 Group Prefix: ${GROUPPREFIX}
+┗━━━━━━━━━━━━━━━━━┛
+`,
+      `
+▸▸▸ 𝗣𝗥𝗘𝗙𝗜𝗫 𝗦𝗧𝗔𝗧𝗨𝗦 ◂◂◂
+  Ping: ${ping}ms
+  Day: ${day}
+  Bot Name: ${BOTNAME}
+  Bot Prefix: ${BOTPREFIX}
+  Group Prefix: ${GROUPPREFIX}
+`
+    ];
 
-    const gifPath = path.join(__dirname, "noprefix", "abdullah.gif");
+    // ===============================
+    // 💠 RANDOM GIF SELECTION
+    // ===============================
+    const gifList = [
+      "abdullah2.gif",
+      "abdullah1.gif",
+      "abdullah3.gif"
+    ];
+
+    const randomGif = gifList[Math.floor(Math.random() * gifList.length)];
+    const gifPath = path.join(__dirname, "noprefix", randomGif);
+
+    const chosenFrame = frames[Math.floor(Math.random() * frames.length)];
 
     return api.sendMessage(
       {
-        body: msg,
+        body: chosenFrame,
         attachment: fs.createReadStream(gifPath)
       },
       threadID,
